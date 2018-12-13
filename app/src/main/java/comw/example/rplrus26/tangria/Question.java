@@ -24,12 +24,13 @@ import java.util.ArrayList;
 
 public class Question extends AppCompatActivity {
 
-    ArrayList<questions> questionsArrayList;
+    ArrayList<questions> questionsArrayList = new ArrayList<questions>();
     ViewPager viewPager;
     JSONArray Hasiljson;
     QuestionAdapter adapter;
     Button previousBtn;
     Button nextBtn;
+    questions questions;
 
 
     @Override
@@ -39,10 +40,11 @@ public class Question extends AppCompatActivity {
         viewPager = findViewById(R.id.viewpager);
         previousBtn = findViewById(R.id.previous_btn);
         nextBtn = findViewById(R.id.next_btn);
-        initFragment(questionsArrayList);
 
-
+        questions = new questions();
         new Adata().execute();
+
+
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -85,12 +87,13 @@ public class Question extends AppCompatActivity {
                 Hasiljson = jsonObject.getJSONArray("Result");
                 for (int i = 0; i < Hasiljson.length(); i++) {
                     questions a = new questions();
-                    a.setId(Hasiljson.getJSONObject(i).getInt("id"));
+                    a.setId(Hasiljson.getJSONObject(i).getInt("id_question"));
                     a.setPertanyaan(Hasiljson.getJSONObject(i).getString("pertanyaan"));
-                    Log.e("question", "onPostExecute: " + Hasiljson.getJSONObject(i).getInt("id") );
+                    Log.e("question", "onPostExecute: " + Hasiljson.getJSONObject(i).getInt("id_question") );
                     Log.e("question", "onPostExecute: " + Hasiljson.getJSONObject(i).getString("pertanyaan"));
                     questionsArrayList.add(a);
                 }
+                initFragment(questionsArrayList);
             } catch (Exception ignored) {
                 System.out.println("erornya " + ignored);
             }
@@ -105,6 +108,7 @@ public class Question extends AppCompatActivity {
             questions quest = questionsArrayList.get(i);
             adapter.initFragment(QuestionFragment.newInstance(quest.getPertanyaan(), quest.getId()));
             Log.e("Question", "initFragment: " + i );
+            Log.e("Question", "initFragment: " + quest.getPertanyaan() );
         }
         viewPager.setAdapter(adapter);
     }
