@@ -23,6 +23,5 @@
         android:text="Beauty and Spa"
         android:fontFamily="monospace"
         android:textStyle="bold"
-
         android:gravity="center"/>
 </LinearLayout>

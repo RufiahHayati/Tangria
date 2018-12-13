@@ -22,7 +22,7 @@
         android:layout_gravity="center"
         android:textSize="40dp"
         android:fontFamily="cursive"
-        android:textColor="#42abfb"
+        android:textColor="#2192e8"
         android:textStyle="bold"/>
     <TextView
         android:layout_width="match_parent"
@@ -55,14 +55,14 @@
         android:id="@+id/edtNama"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nama : "
+        android:hint="Nama  "
         android:layout_marginTop="20dp"
         android:textColor="#000" />
     <EditText
         android:id="@+id/edtAlamat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Alamat : "
+        android:hint="Alamat  "
         android:textColor="#000" />
     </LinearLayout>
     <Button
