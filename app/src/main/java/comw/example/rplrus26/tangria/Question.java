@@ -2,13 +2,14 @@ package comw.example.rplrus26.tangria;
 
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,42 +25,90 @@ import java.util.ArrayList;
 
 public class Question extends AppCompatActivity {
 
-    ArrayList<questions> questionsArrayList = new ArrayList<questions>();
+    ArrayList<questions> questionsArrayList;
     ViewPager viewPager;
-    JSONArray Hasiljson;
     QuestionAdapter adapter;
-    Button previousBtn;
-    Button nextBtn;
-    questions questions;
-
-
+    Button previousBtn,nextBtn;
+    questions question;
+    private RecyclerView recyclerView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question);
         viewPager = findViewById(R.id.viewpager);
+        new load_data().execute();
         previousBtn = findViewById(R.id.previous_btn);
         nextBtn = findViewById(R.id.next_btn);
 
-        questions = new questions();
-        new Adata().execute();
-
-
+        //        previousBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
+//            }
+//        });
+//
+//        nextBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (viewPager.getCurrentItem() == questionsArrayList.size()) {
+//
+//                }else {
+//                    final int position = viewPager.getCurrentItem();
+//                    QuestionFragment fragment = (QuestionFragment) adapter.getItem(position);
+//                    final questions survey = questionsArrayList.get(position);
+//                    final String answer = fragment.getAnswer();
+//                    survey.addAnswer(answer);
+//                    Log.e("answer", "onClick: " + answer);
+//                    viewPager.setCurrentItem(position + 1);
+//
+//                }
+//            }
+//        });
+//
+//        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override
+//            public void onPageScrolled(int i, float v, int i1) {
+//            }
+//
+//            @Override
+//            public void onPageSelected(int i) {
+//                if (i == questionsArrayList.size()) {
+//                    nextBtn.setText("Finish");
+//                } else {
+//                    nextBtn.setText("Next");
+//                }
+//                if (i == 0) {
+//                    previousBtn.setVisibility(View.GONE);
+//                } else {
+//                    previousBtn.setVisibility(View.VISIBLE);
+//                }
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int i) {
+//
+//            }
+//        });
     }
+//
+//    public void changeToDesiredQuestion(int position) {
+//        viewPager.setCurrentItem(position);
+//    }
 
     @SuppressLint("StaticFieldLeak")
-    public class Adata extends AsyncTask<Void, Void, JSONObject> {
+    public class load_data extends AsyncTask<Void, Void, JSONObject> {
+
         @Override
         protected void onPreExecute() {
-            //kasih loading
         }
 
         @Override
         protected JSONObject doInBackground(Void... params) {
             JSONObject jsonObject;
+
             try {
                 String url = OnlyUrl.url + "question.php";
-                System.out.println("urlnya : " + url);
+                System.out.println("url " + url);
                 DefaultHttpClient httpClient = new DefaultHttpClient();
                 HttpGet httpGet = new HttpGet(url);
                 HttpResponse httpResponse = httpClient.execute(httpGet);
@@ -82,34 +131,36 @@ public class Question extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(JSONObject jsonObject) {
+            Log.d("hasil json ", "onPostExecute: " + jsonObject.toString());
             try {
-                questionsArrayList = new ArrayList<>();
-                Hasiljson = jsonObject.getJSONArray("Result");
-                for (int i = 0; i < Hasiljson.length(); i++) {
-                    questions a = new questions();
-                    a.setId(Hasiljson.getJSONObject(i).getInt("id_question"));
-                    a.setPertanyaan(Hasiljson.getJSONObject(i).getString("pertanyaan"));
-                    Log.e("question", "onPostExecute: " + Hasiljson.getJSONObject(i).getInt("id_question") );
-                    Log.e("question", "onPostExecute: " + Hasiljson.getJSONObject(i).getString("pertanyaan"));
-                    questionsArrayList.add(a);
+                if (jsonObject != null) {
+                    JSONArray hasiljson = jsonObject.getJSONArray("Result");
+                    questionsArrayList = new ArrayList<questions>();
+                    for (int i = 0; i < hasiljson.length(); i++) {
+                        ArrayList<String>answer = new ArrayList<String>();
+                        answer.add("Yes");
+                        answer.add("No");
+                        questionsArrayList.add(new questions(hasiljson.getJSONObject(i).getInt("id_question"),hasiljson.getJSONObject(i).getString("pertanyaan"),answer));
+                    }
+                        initFragment(questionsArrayList);
+                } else {
+                    Log.d("TAG", "onPostExecute: " + "json object null");
                 }
-                initFragment(questionsArrayList);
-            } catch (Exception ignored) {
-                System.out.println("erornya " + ignored);
+            } catch (Exception e) {
+                Log.d("errorku ", "onPostExecute: " + e.toString());
             }
         }
-
     }
-
     void initFragment(ArrayList<questions> questionsArrayList) {
         adapter = new QuestionAdapter(getSupportFragmentManager());
         Log.e("SlideActivity", "initFragment: " + questionsArrayList.size());
         for (int i = 0; i <= questionsArrayList.size(); i++) {
             questions quest = questionsArrayList.get(i);
-            adapter.initFragment(QuestionFragment.newInstance(quest.getPertanyaan(), quest.getId()));
-            Log.e("Question", "initFragment: " + i );
-            Log.e("Question", "initFragment: " + quest.getPertanyaan() );
+            adapter.initFragment(QuestionFragment.newInstance(quest.getPertanyaan(), quest.getId(), questionsArrayList.get(i).getAnswers(),R.layout.row_item));
+            Log.e("Question", "initFragment: " + i);
+            Log.e("Question", "initFragment: " + quest.getPertanyaan());
         }
         viewPager.setAdapter(adapter);
     }
+
 }
